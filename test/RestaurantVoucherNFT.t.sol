@@ -71,6 +71,17 @@ contract RestaurantVoucherNFTEdgeCasesTest is Test {
             );
         }
 
+        // Test  arrays
+        vm.prank(owner);
+        voucherNFT.batchMintVouchers(address(0x4), ids, amounts);
+
+        assertEq(voucherNFT.balanceOf(address(0x4), ids[0]), amounts[0]);
+        assertEq(voucherNFT.balanceOf(address(0x4), ids[1]), amounts[1]);
+        assertEq(voucherNFT.balanceOf(address(0x4), ids[2]), amounts[2]);
+        assertEq(voucherNFT.getVoucherInfo(ids[0]).currentSupply, amounts[0]);
+        assertEq(voucherNFT.getVoucherInfo(ids[1]).currentSupply, amounts[1]);
+        assertEq(voucherNFT.getVoucherInfo(ids[2]).currentSupply, amounts[2]);
+
         // Test empty arrays
         vm.prank(owner);
         vm.expectRevert(RestaurantVoucherNFT.EmptyArrays.selector);
@@ -104,6 +115,27 @@ contract RestaurantVoucherNFTEdgeCasesTest is Test {
             uint64(block.timestamp + 14 days),
             "https://example.com/bife"
         );
+
+        vm.prank(owner);
+        voucherNFT.createVoucher(
+            "LASANHA",
+            2,
+            0.1 ether,
+            100,
+            uint64(block.timestamp),
+            uint64(block.timestamp + 7 days),
+            uint64(block.timestamp + 14 days),
+            "https://example.com/lasanha"
+        );
+
+        //Mint and redeem voucher
+        vm.prank(owner);
+        voucherNFT.mintVoucher(address(0x4), 2, 1);
+        assertEq(voucherNFT.balanceOf(address(0x4), 2), 1);
+
+        vm.prank(address(0x4));
+        voucherNFT.redeemVoucher(2, 1);
+        assertEq(voucherNFT.balanceOf(address(0x4), 2), 0);
 
         // Test setting inactive
         vm.prank(owner);
